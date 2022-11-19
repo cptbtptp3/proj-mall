@@ -1,0 +1,53 @@
+@import "./normalize.css";
+
+/*  :root 获取根元素html  */
+:root{
+    --color-text:#666; /* 设置变量*/
+    --color-high-text:#ff5777;
+    --color-tint:#ff8198;
+    --color-background:#fff;
+    --font-size:14px;
+    --line-height:1.5;
+}
+
+*, /* 星号表示所有元素*/
+*::before, /* css3中伪类的写法  表示在所有元素之前要插入xxx */
+*::after{  /* 在所有元素之后插入一个样式*/
+    margin: 0;  /*外边距*/
+    padding: 0; /* 内边距*/
+    box-sizing: border-box; /*就是将border和padding数值包含在width和height之内，这样的好处就是修改border和padding数值盒子的大小不变*/
+}
+
+body{
+    /*可以把多个字体名称作为一个“回退”系统来保存。如果浏览器不支持第一个字体，则会尝试下一个。也就是说，font-family 属性的值是用于某个元素的字体族名称或/及类族名称的一个优先表。浏览器会使用它可识别的第一个值。*/
+    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+    user-select: none; /*禁止用户鼠标在页面上选中文字、图片等*/
+    -webkit-tap-highlight-color: transparent;/*webkit苹果浏览器引擎 tap点击 highlight背景高亮 color颜色 颜色用数值调节*/
+    background: var(--color-background);
+    color: var(--color-text);
+    width: 100vw; /*vw就是当前屏幕宽度的1%*/
+}
+
+a{
+    color: var(--color-text);
+    text-decoration: none; /*去除a标签默认样式的下划线*/
+}
+
+/*清除浮动*/
+.clear-fix::after{
+    clear: both; /*元素两边不能有浮动*/
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    visibility: hidden; /*使元素不可见*/
+}
+.clear-fix{
+    zoom: 1; /*给IE6清除浮动的*/
+}
+.left{
+    float: left;
+}
+.right{
+    float: right;
+}
