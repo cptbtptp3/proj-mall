@@ -1,114 +1,20 @@
 <template>
   <div id="home">
+
     <nav-bar class="home-nav">
       <div slot="center">T-mall</div>
     </nav-bar>
-    <home-swiper :banners="banners"></home-swiper>
-    <recommend-view :recommends="recommends"></recommend-view>
-    <feature-view></feature-view>
-    <tab-control class="tab-control" :titles="['流行','新款','精选']"></tab-control>
-    <ul>
-      <li>list1</li>
-      <li>list2</li>
-      <li>list3</li>
-      <li>list4</li>
-      <li>list5</li>
-      <li>list6</li>
-      <li>list7</li>
-      <li>list8</li>
-      <li>list9</li>
-      <li>list10</li>
-      <li>list11</li>
-      <li>list12</li>
-      <li>list13</li>
-      <li>list14</li>
-      <li>list15</li>
-      <li>list16</li>
-      <li>list17</li>
-      <li>list18</li>
-      <li>list19</li>
-      <li>list20</li>
-      <li>list21</li>
-      <li>list22</li>
-      <li>list23</li>
-      <li>list24</li>
-      <li>list25</li>
-      <li>list26</li>
-      <li>list27</li>
-      <li>list28</li>
-      <li>list29</li>
-      <li>list30</li>
-      <li>list31</li>
-      <li>list32</li>
-      <li>list33</li>
-      <li>list34</li>
-      <li>list35</li>
-      <li>list36</li>
-      <li>list37</li>
-      <li>list38</li>
-      <li>list39</li>
-      <li>list40</li>
-      <li>list41</li>
-      <li>list42</li>
-      <li>list43</li>
-      <li>list44</li>
-      <li>list45</li>
-      <li>list46</li>
-      <li>list47</li>
-      <li>list48</li>
-      <li>list49</li>
-      <li>list50</li>
-      <li>list51</li>
-      <li>list52</li>
-      <li>list53</li>
-      <li>list54</li>
-      <li>list55</li>
-      <li>list56</li>
-      <li>list57</li>
-      <li>list58</li>
-      <li>list59</li>
-      <li>list60</li>
-      <li>list61</li>
-      <li>list62</li>
-      <li>list63</li>
-      <li>list64</li>
-      <li>list65</li>
-      <li>list66</li>
-      <li>list67</li>
-      <li>list68</li>
-      <li>list69</li>
-      <li>list70</li>
-      <li>list71</li>
-      <li>list72</li>
-      <li>list73</li>
-      <li>list74</li>
-      <li>list75</li>
-      <li>list76</li>
-      <li>list77</li>
-      <li>list78</li>
-      <li>list79</li>
-      <li>list80</li>
-      <li>list81</li>
-      <li>list82</li>
-      <li>list83</li>
-      <li>list84</li>
-      <li>list85</li>
-      <li>list86</li>
-      <li>list87</li>
-      <li>list88</li>
-      <li>list89</li>
-      <li>list90</li>
-      <li>list91</li>
-      <li>list92</li>
-      <li>list93</li>
-      <li>list94</li>
-      <li>list95</li>
-      <li>list96</li>
-      <li>list97</li>
-      <li>list98</li>
-      <li>list99</li>
-      <li>list100</li>
-    </ul>
+
+    <scroll class="content" ref="scroll" :probeType="3" :pull-up-load="true" @scroll="contentScroll" @pullingUp="loadMore">
+      <home-swiper :banners="banners" />
+      <recommend-view :recommends="recommends" />
+      <feature-view />
+      <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick"/>
+      <goods-list :goods="showGoods"/>
+    </scroll>
+
+    <back-top @click.native="backTop" v-show="iconShow"/>
+
   </div>
 </template>
 
@@ -119,11 +25,15 @@ import FeatureView from "@/views/home/childComps/FeatureView";
 
 import NavBar from "@/components/common/nav-bar/NavBar";
 import TabControl from "@/components/common/tab-control/TabControl";
+import GoodsList from "@/components/content/goods/GoodsList";
+import Scroll from "@/components/common/scroll/Scroll";
+
+import BackTop from "@/components/content/backTop/BackTop";
 
 import {getMultidata,getHomeGoods} from "@/network/home";
 export default {
   name: "Home",
-  components:{NavBar,HomeSwiper,RecommendView,FeatureView,TabControl},
+  components:{NavBar,HomeSwiper,RecommendView,FeatureView,TabControl,GoodsList,Scroll,BackTop},
   data(){
     return {
       banners:null,
@@ -132,7 +42,14 @@ export default {
         'pop':{page:0,list:[]},
         'new':{page:0,list:[]},
         'sell':{page:0,list:[]}
-      }
+      },
+      currentType:'pop',
+      iconShow:false
+    }
+  },
+  computed:{
+    showGoods(){
+      return this.goods[this.currentType].list
     }
   },
   created() {
@@ -144,7 +61,58 @@ export default {
     this.getHomeGoods('new');
     this.getHomeGoods('sell');
   },
+  mounted() {
+    const refresh = this.debounce(this.$refs.scroll.refresh,200) //如果传入的是this.$refs.scroll.refresh() 相当于把这个函数的返回值传入
+    //监听goodsListItem图片加载完成时 进行一次刷新
+    this.$bus.$on('itemImageLoad',() => {
+      refresh()
+    })
+  },
   methods:{
+    /**
+     * 防抖函数
+     * */
+    debounce(func,delay){
+      let timer =null
+      return function (...args) {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+          func.apply(this,args)
+        },delay)
+      }
+    },
+    /**
+     * 事件监听
+     * */
+    tabClick(index){
+      switch (index) {
+        case 0:
+          this.currentType = 'pop'
+          break
+        case 1:
+          this.currentType = 'new'
+          break
+        case 2:
+          this.currentType = 'sell'
+          break
+      }
+    },
+    backTop(){
+      //this.$refs.scroll拿到scroll组件 .scroll拿到组件中的scroll对象 在调用scrollTo方法  (x,y,time)
+      // this.$refs.scroll.scroll.scrollTo(0,0,500)
+
+      //调用scroll组件中的方法实现  等同与上面
+      this.$refs.scroll.scrollTo(0,0,500)
+    },
+    contentScroll(position){
+      this.iconShow = (-position.y) > 1000
+    },
+    loadMore(){
+      this.getHomeGoods(this.currentType)
+    },
+    /**
+     * 网络请求
+     * */
     getMultidata(){
       // getMultidata()发送网络请求 .then()拿到数据
       getMultidata().then(res => {
@@ -158,6 +126,8 @@ export default {
       getHomeGoods(type,page).then(res => {
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1
+        //调用scroll组件中的finishPullUp()方法
+        this.$refs.scroll.finishPullUp()
       })
     }
   }
@@ -167,6 +137,8 @@ export default {
 <style scoped>
 #home{
   padding-top: 44px;
+  height: 100vh;
+  position: relative;
 }
 .home-nav{
   text-align: center;
@@ -182,5 +154,15 @@ export default {
 .tab-control{
   position: sticky;
   top: 44px;
+  z-index: 9;
+}
+.content{
+  overflow: hidden;
+
+  position: absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
 }
 </style>
