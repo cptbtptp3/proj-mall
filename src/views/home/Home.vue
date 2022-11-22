@@ -5,11 +5,13 @@
       <div slot="center">T-mall</div>
     </nav-bar>
 
+    <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick" ref="tabControl" v-show="tabCtrlFixed"/>
+
     <scroll class="content" ref="scroll" :probeType="3" :pull-up-load="true" @scroll="contentScroll" @pullingUp="loadMore">
-      <home-swiper :banners="banners" />
+      <home-swiper :banners="banners" @imageLoad="imageLoad"/>
       <recommend-view :recommends="recommends" />
       <feature-view />
-      <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick"/>
+      <tab-control  :titles="['流行','新款','精选']" @tabClick="tabClick" ref="tabControl2"/>
       <goods-list :goods="showGoods"/>
     </scroll>
 
@@ -44,13 +46,24 @@ export default {
         'sell':{page:0,list:[]}
       },
       currentType:'pop',
-      iconShow:false
+      iconShow:false,
+      tabCtrlOffsetTop:0,
+      tabCtrlFixed:false,
+      scrollY:0
     }
   },
   computed:{
     showGoods(){
       return this.goods[this.currentType].list
     }
+  },
+  activated() {
+    this.$refs.scroll.scrollTo(0,this.scrollY,0)
+    this.$refs.scroll.refresh()
+  },
+  deactivated() {
+    //保存不活跃时滚动的距离
+    this.scrollY = this.$refs.scroll.getScrollY()
   },
   created() {
     //请求轮播图 推荐相关数据
@@ -96,6 +109,8 @@ export default {
           this.currentType = 'sell'
           break
       }
+      this.$refs.tabControl.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
     },
     backTop(){
       //this.$refs.scroll拿到scroll组件 .scroll拿到组件中的scroll对象 在调用scrollTo方法  (x,y,time)
@@ -105,10 +120,18 @@ export default {
       this.$refs.scroll.scrollTo(0,0,500)
     },
     contentScroll(position){
+      //判断滚动的距离 决定backTop是否显示
       this.iconShow = (-position.y) > 1000
+
+      //决定tab-control是否吸顶
+      this.tabCtrlFixed= (-position.y) > this.tabCtrlOffsetTop
     },
     loadMore(){
       this.getHomeGoods(this.currentType)
+    },
+    imageLoad(){
+      //所有的组件都有一个属性$el 用于获取组件中的元素
+      this.tabCtrlOffsetTop = this.$refs.tabControl2.$el.offsetTop
     },
     /**
      * 网络请求
@@ -136,7 +159,7 @@ export default {
 
 <style scoped>
 #home{
-  padding-top: 44px;
+  /*padding-top: 44px;*/
   height: 100vh;
   position: relative;
 }
@@ -144,17 +167,16 @@ export default {
   text-align: center;
   background-color: var(--color-tint);
   color: #fff;
-
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9;
+  /*在使用浏览器原生滚动时  为了不让导航栏跟随滚动*/
+  /*position: fixed;*/
+  /*top: 0;*/
+  /*left: 0;*/
+  /*right: 0;*/
+  /*z-index: 9;*/
 }
 .tab-control{
-  position: sticky;
-  top: 44px;
-  z-index: 9;
+  position: relative;
+  z-index: 9; /*只对定位的元素起效果*/
 }
 .content{
   overflow: hidden;

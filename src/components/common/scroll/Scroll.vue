@@ -31,19 +31,23 @@ export default {
         click:true,
         probeType:this.probeType,
         pullUpLoad:this.pullUpLoad
-      }),
+      })
 
       //监听滚动事件
-      this.scroll.on('scroll',position => {
-        // console.log(position);
-        //必须设置定时器  否则在bscroll对象创建出来之前 浏览器是解析不了.on()方法的
-        this.$emit('scroll',position)
-      }),
+      if(this.probeType === 2 || this.probeType === 3){
+        this.scroll.on('scroll',position => {
+          // console.log(position);
+          //必须设置定时器  否则在bscroll对象创建出来之前 浏览器是解析不了.on()方法的
+          this.$emit('scroll',position)
+        })
+      }
 
       //监听上拉事件
-      this.scroll.on('pullingUp',() =>{
-        this.$emit('pullingUp')
-      })
+      if(this.pullUpLoad){
+        this.scroll.on('pullingUp',() =>{
+          this.$emit('pullingUp')
+        })
+      }
   },
   methods: {
     //time是默认值
@@ -56,6 +60,9 @@ export default {
     },
     finishPullUp() {
       this.scroll && this.scroll.finishPullUp()
+    },
+    getScrollY(){
+      return this.scroll ? this.scroll.y : 0
     }
   }
 }
