@@ -27,12 +27,15 @@ import FeatureView from "@/views/home/childComps/FeatureView";
 
 import NavBar from "@/components/common/nav-bar/NavBar";
 import TabControl from "@/components/common/tab-control/TabControl";
-import GoodsList from "@/components/content/goods/GoodsList";
 import Scroll from "@/components/common/scroll/Scroll";
 
+import GoodsList from "@/components/content/goods/GoodsList";
 import BackTop from "@/components/content/backTop/BackTop";
 
 import {getMultidata,getHomeGoods} from "@/network/home";
+
+import {itemListenerMixin} from "@/common/mixin";
+
 export default {
   name: "Home",
   components:{NavBar,HomeSwiper,RecommendView,FeatureView,TabControl,GoodsList,Scroll,BackTop},
@@ -52,6 +55,7 @@ export default {
       scrollY:0
     }
   },
+  mixins:[itemListenerMixin],
   computed:{
     showGoods(){
       return this.goods[this.currentType].list
@@ -64,6 +68,9 @@ export default {
   deactivated() {
     //保存不活跃时滚动的距离
     this.scrollY = this.$refs.scroll.getScrollY()
+
+    //离开时取消全局事件的监听
+    this.$bus.$off('itemImageLoad',this.itemImgListener)
   },
   created() {
     //请求轮播图 推荐相关数据
@@ -75,11 +82,12 @@ export default {
     this.getHomeGoods('sell');
   },
   mounted() {
-    const refresh = this.debounce(this.$refs.scroll.refresh,200) //如果传入的是this.$refs.scroll.refresh() 相当于把这个函数的返回值传入
-    //监听goodsListItem图片加载完成时 进行一次刷新
-    this.$bus.$on('itemImageLoad',() => {
-      refresh()
-    })
+    //在mixin混入 已经合并
+    // const refresh = this.debounce(this.$refs.scroll.refresh,200) //如果传入的是this.$refs.scroll.refresh() 相当于把这个函数的返回值传入
+    // //监听goodsListItem图片加载完成时 进行一次刷新
+    // this.$bus.$on('itemImageLoad',() => {
+    //   refresh()
+    // })
   },
   methods:{
     /**

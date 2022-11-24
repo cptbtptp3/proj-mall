@@ -23,6 +23,7 @@ export default {
   methods:{
     titlesClick(index){
       this.currentIndex = index
+      this.$emit('titlesClick',index)
     },
     backClick(){
       this.$router.go(-1)
