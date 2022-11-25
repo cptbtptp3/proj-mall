@@ -10,6 +10,10 @@
      <detail-comment-info :comment-info="commentInfo" ref="comment"/>
      <goods-list :goods="recommends" ref="recommend"/>
    </scroll>
+
+   <detail-bottom-bar @addCart="addToCart"/>
+   <back-top @click.native="backTop" v-show="iconShow"/>
+
  </div>
 </template>
 
@@ -21,6 +25,7 @@ import DetailShopInfo from "@/views/detail/childComps/DetailShopInfo";
 import DetailGoodsInfo from "@/views/detail/childComps/DetailGoodsInfo";
 import DetailParamInfo from "@/views/detail/childComps/DetailParamInfo";
 import DetailCommentInfo from "@/views/detail/childComps/DetailCommentInfo";
+import DetailBottomBar from "@/views/detail/childComps/DetailBottomBar";
 
 import Scroll from "@/components/common/scroll/Scroll";
 
@@ -28,12 +33,12 @@ import GoodsList from "@/components/content/goods/GoodsList";
 
 import {getDetails,Goods,Shop,GoodsParam,getRecommend} from "@/network/detail";
 
-import {itemListenerMixin} from "@/common/mixin";
+import {itemListenerMixin,backTopMixin} from "@/common/mixin";
 import {debounce} from "@/common/utils";
 
 export default {
   name: "Detail",
-  components:{DetailNavBar,DetailSwiper,DetailBaseInfo,DetailShopInfo,DetailGoodsInfo,DetailParamInfo,DetailCommentInfo,Scroll,GoodsList},
+  components:{DetailNavBar,DetailSwiper,DetailBaseInfo,DetailShopInfo,DetailGoodsInfo,DetailParamInfo,DetailCommentInfo,DetailBottomBar,Scroll,GoodsList},
   data(){
     return{
       iid:null,
@@ -49,7 +54,7 @@ export default {
       currentIndex:0
     }
   },
-  mixins:[itemListenerMixin],
+  mixins:[itemListenerMixin,backTopMixin],
   created() {
     //保存传入的商品id
     this.iid = this.$route.query.iid
@@ -107,10 +112,21 @@ export default {
         if(this.currentIndex !== i && positionY >= this.topY[i] && positionY < this.topY[i+1]){
           this.currentIndex = i
           this.$refs.detailNav.currentIndex = this.currentIndex
-
-
         }
       }
+      //混入中实现
+      this.iconShow = (-position.y) > 1000
+    },
+    addToCart(){
+      //获取需要展示的商品信息
+      const production = {}
+      production.image = this.topImages[0];
+      production.title = this.goods.title;
+      production.desc = this.goods.desc;
+      production.price = this.goods.realPrice;
+      production.iid = this.iid;
+
+      this.$store.commit('addToCart',production)
     }
   }
 
@@ -124,14 +140,15 @@ export default {
   z-index: 9;
   background-color: #fff;
 }
-.detail-nav{
-  position: relative;
-  z-index: 9 ;
-  background-color: #fff;
-}
+/*.detail-nav{*/
+/*  position: relative;*/
+/*  z-index: 9 ;*/
+/*  background-color: #fff;*/
+/*}*/
 .content{
   position: relative;
   /*height: 1000px;*/
-  height: calc(100% - 44px);
+  height: calc(100% - 44px - 44px);
+  overflow: hidden;
 }
 </style>
