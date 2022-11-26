@@ -126,7 +126,7 @@ export default {
       production.price = this.goods.realPrice;
       production.iid = this.iid;
 
-      this.$store.commit('addToCart',production)
+      this.$store.dispatch('addToCart',production)
     }
   }
 

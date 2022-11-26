@@ -57,7 +57,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .comment {
     padding: 5px 12px;
     color: #333;
