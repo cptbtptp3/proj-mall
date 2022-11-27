@@ -18,6 +18,14 @@ export default {
     pullUpLoad:{
       type:Boolean,
       default: false
+    },
+    observeDOM: {
+      type: Boolean,
+      default: false,
+    },
+    observeImage: {
+      type: Boolean,
+      default:false
     }
   },
   data(){
@@ -30,7 +38,10 @@ export default {
       this.scroll = new BScroll(this.$refs.wrapper,{ //this.$refs.wrapper相当于直接拿到ref="wrapper"的元素对象
         click:true,
         probeType:this.probeType,
-        pullUpLoad:this.pullUpLoad
+        pullUpLoad:this.pullUpLoad,
+        observeDOM: this.observeDOM,
+        // 等页面图片加载完之后，刷新content高度
+        observeImage: this.observeImage
       })
 
       //监听滚动事件
@@ -63,6 +74,11 @@ export default {
     },
     getScrollY(){
       return this.scroll ? this.scroll.y : 0
+    }
+  },
+  watch: {
+    data () {
+      setTimeout(this.refresh,30)
     }
   }
 }

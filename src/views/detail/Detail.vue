@@ -36,6 +36,8 @@ import {getDetails,Goods,Shop,GoodsParam,getRecommend} from "@/network/detail";
 import {itemListenerMixin,backTopMixin} from "@/common/mixin";
 import {debounce} from "@/common/utils";
 
+import {mapActions} from 'vuex'
+
 export default {
   name: "Detail",
   components:{DetailNavBar,DetailSwiper,DetailBaseInfo,DetailShopInfo,DetailGoodsInfo,DetailParamInfo,DetailCommentInfo,DetailBottomBar,Scroll,GoodsList},
@@ -86,6 +88,7 @@ export default {
     getRecommend().then(res => {
       this.recommends = res.data.list
     })
+
     //获取对应组件的offsetTop值 保存并进行防抖
     this.getTopY = debounce(() => {
       this.topY = []
@@ -97,6 +100,7 @@ export default {
     this.$bus.$off('itemImageLoad',this.itemImgListener)
   },
   methods:{
+    ...mapActions(['addToCart']),
     imageLoad(){
       this.$refs.scroll.refresh()
       this.getTopY()
@@ -126,7 +130,10 @@ export default {
       production.price = this.goods.realPrice;
       production.iid = this.iid;
 
-      this.$store.dispatch('addToCart',production)
+      this.$store.dispatch('addToCart',production).then(res => {
+        this.$toast.show()
+      })
+      // this.addToCart(production).then(res => {}) 等同于上面的写法  已经通过mapActions实现
     }
   }
 
